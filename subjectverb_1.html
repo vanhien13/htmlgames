@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Grammar Academy: Subject vs Verb</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2d6a4f;
+            --accent-green: #52b788;
+            --dino-egg: #f8f9fa;
+            --subject-blue: #4361ee;
+            --verb-red: #ef233c;
+            --text-dark: #2b2d42;
+            --explanation-bg: #edf2f4;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--primary-green);
+            background-image: url("https://www.transparenttextures.com/patterns/leaf.png");
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        #academy-container {
+            background-color: var(--dino-egg);
+            width: 90%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 0 rgba(0,0,0,0.2);
+            border: 8px solid #1b4332;
+            text-align: center;
+        }
+
+        header h1 {
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary-green);
+            font-size: 2.2rem;
+            margin: 0;
+            text-shadow: 2px 2px #d8f3dc;
+        }
+
+        .lesson-info {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Flashcard Style */
+        #word-card {
+            background: white;
+            padding: 2.5rem 1rem;
+            border-radius: 20px;
+            border: 4px solid var(--accent-green);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        #target-word {
+            font-size: 3rem;
+            font-family: 'Fredoka One', cursive;
+            color: var(--text-dark);
+            display: block;
+        }
+
+        #target-meaning {
+            font-size: 1.2rem;
+            color: #888;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .game-btn {
+            padding: 1.2rem;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-subject { background-color: var(--subject-blue); }
+        .btn-verb { background-color: var(--verb-red); }
+
+        .game-btn:active { transform: translateY(4px); box-shadow: none; }
+        .game-btn:disabled { filter: grayscale(1); cursor: not-allowed; }
+
+        /* Feedback Section */
+        #feedback-panel {
+            margin-top: 2rem;
+            display: none;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .explanation-box {
+            background: var(--explanation-bg);
+            padding: 1.2rem;
+            border-radius: 15px;
+            text-align: left;
+            border-left: 8px solid var(--accent-green);
+        }
+
+        .expl-en { font-style: italic; color: #333; margin-bottom: 8px; font-weight: 600; }
+        .expl-vi { color: #555; font-size: 0.95rem; }
+
+        #next-btn {
+            background: var(--primary-green);
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+        }
+
+        #score-board {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #ccc;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="academy-container">
+    <header>
+        <h1>🦖 DINO ACADEMY</h1>
+        <p class="lesson-info">Topic: Subject vs. Verb (Present Simple)</p>
+    </header>
+
+    <div id="word-card">
+        <span id="target-word">LOADING...</span>
+        <span id="target-meaning">đang tải...</span>
+    </div>
+
+    <div class="btn-group" id="btn-container">
+        <button class="game-btn btn-subject" onclick="submitAnswer('subject')">SUBJECT</button>
+        <button class="game-btn btn-verb" onclick="onclick=submitAnswer('verb')">VERB</button>
+    </div>
+
+    <div id="feedback-panel">
+        <div id="result-status" class="result-title"></div>
+        <div class="explanation-box">
+            <div id="expl-en" class="expl-en"></div>
+            <div id="expl-vi" class="expl-vi"></div>
+        </div>
+        <button id="next-btn" class="game-btn" onclick="goToNext()">NEXT QUESTION ➔</button>
+    </div>
+
+    <div id="score-board">
+        Score: <span id="current-score" style="color: var(--primary-green);">0</span> / <span id="total-asked">0</span>
+    </div>
+</div>
+
+<script>
+    const teacherData = [
+        {
+            w: "The Raptor", m: "(Con Raptor)", type: "subject",
+            en: "This is a noun naming the creature that performs an action. It is the 'doer'.",
+            vi: "Đây là danh từ chỉ tên sinh vật thực hiện hành động. Nó đóng vai trò làm 'Chủ từ' trong câu."
+        },
+        {
+            w: "Smashes", m: "(Đập tan)", type: "verb",
+            en: "An action word. In Present Simple, we add '-es' because the subject is singular (he/she/it).",
+            vi: "Một từ chỉ hành động. Ở thì hiện tại đơn, ta thêm '-es' vì chủ ngữ là số ít."
+        },
+        {
+            w: "Paleontologists", m: "(Các nhà cổ sinh vật học)", type: "subject",
+            en: "A plural noun referring to people. They are the subject of the sentence.",
+            vi: "Một danh từ số nhiều chỉ người. Họ là chủ thể thực hiện hành động nghiên cứu."
+        },
+        {
+            w: "Explore", m: "(Khám phá)", type: "verb",
+            en: "This is a base form verb used for plural subjects (like 'they' or 'paleontologists').",
+            vi: "Đây là động từ nguyên mẫu dùng cho các chủ ngữ số nhiều."
+        },
+        {
+            w: "She", m: "(Cô ấy)", type: "subject",
+            en: "A personal pronoun used as a subject to avoid repeating a noun.",
+            vi: "Một đại từ nhân xưng dùng làm chủ ngữ để tránh lặp lại danh từ trước đó."
+        },
+        {
+            w: "Washes", m: "(Rửa/Gội)", type: "verb",
+            en: "A verb describing a habit. We add '-es' after verbs ending in 'sh' with third-person subjects.",
+            vi: "Động từ chỉ thói quen. Ta thêm '-es' sau các động từ kết thúc bằng 'sh' khi đi với chủ ngữ ngôi thứ 3 số ít."
+        },
+        {
+            w: "The fossil", m: "(Mẫu hóa thạch)", type: "subject",
+            en: "A noun representing a thing. It can be a subject in a descriptive sentence.",
+            vi: "Danh từ chỉ sự vật. Nó có thể làm chủ ngữ trong một câu miêu tả."
+        },
+        {
+            w: "Protect", m: "(Bảo vệ)", type: "verb",
+            en: "A verb expressing an action. Use 'protect' without '-s' for plural subjects.",
+            vi: "Động từ diễn tả hành động. Sử dụng 'protect' nguyên mẫu cho các chủ ngữ số nhiều."
+        }
+    ];
+
+    let score = 0;
+    let index = 0;
+    let quiz = [];
+
+    function initGame() {
+        quiz = [...teacherData].sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if(index >= quiz.length) {
+            finishGame();
+            return;
+        }
+
+        const q = quiz[index];
+        document.getElementById('target-word').innerText = q.w;
+        document.getElementById('target-meaning').innerText = q.m;
+        document.getElementById('feedback-panel').style.display = 'none';
+        document.querySelectorAll('.game-btn').forEach(b => b.disabled = false);
+    }
+
+    function submitAnswer(userChoice) {
+        const q = quiz[index];
+        const isCorrect = userChoice === q.type;
+        
+        document.querySelectorAll('.btn-group .game-btn').forEach(b => b.disabled = true);
+        
+        const status = document.getElementById('result-status');
+        status.innerText = isCorrect ? "EXCELLENT! 🌟" : "NOT QUITE! 🦕";
+        status.style.color = isCorrect ? "var(--primary-green)" : "var(--verb-red)";
+
+        document.getElementById('expl-en').innerText = q.en;
+        document.getElementById('expl-vi').innerText = q.vi;
+        document.getElementById('feedback-panel').style.display = 'block';
+
+        if(isCorrect) score++;
+        document.getElementById('current-score').innerText = score;
+        document.getElementById('total-asked').innerText = index + 1;
+    }
+
+    function goToNext() {
+        index++;
+        showQuestion();
+    }
+
+    function finishGame() {
+        document.getElementById('academy-container').innerHTML = `
+            <h1>CONGRATULATIONS!</h1>
+            <p style="font-size:1.5rem">You finished the lesson!</p>
+            <div style="font-size:3rem; margin: 20px 0;">🎯 ${score} / ${quiz.length}</div>
+            <button class="game-btn btn-subject" style="width:100%" onclick="location.reload()">RETAKE LESSON</button>
+        `;
+    }
+
+    initGame();
+</script>
+
+</body>
+</html>

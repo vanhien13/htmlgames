@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Junior Chef: Market to Kitchen</title>
+    <style>
+        :root {
+            --market-orange: #ff7043;
+            --kitchen-blue: #26a69a;
+            --white: #ffffff;
+            --text: #37474f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            background: var(--white);
+            width: 95%;
+            max-width: 600px;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 6px solid var(--market-orange);
+        }
+
+        /* Header mang phong cách mái che ở chợ */
+        .header {
+            background: var(--market-orange);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 { margin: 0; font-size: 1.8rem; }
+        .score-box { font-size: 1.2rem; margin-top: 5px; background: rgba(0,0,0,0.1); border-radius: 20px; display: inline-block; padding: 5px 20px; }
+
+        /* Vùng hiển thị món đồ */
+        .display-area {
+            padding: 40px 20px;
+            text-align: center;
+            background: #fffbe6;
+            min-height: 180px;
+        }
+
+        #item-emoji { font-size: 5rem; display: block; margin-bottom: 10px; }
+        #item-name { font-size: 2rem; font-weight: bold; color: var(--text); text-transform: capitalize; }
+
+        /* Nút bấm */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 20px;
+            background: #eeeeee;
+        }
+
+        .btn {
+            border: none;
+            padding: 20px 10px;
+            border-radius: 15px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-countable { background: var(--market-orange); box-shadow: 0 5px #d84315; }
+        .btn-uncountable { background: var(--kitchen-blue); box-shadow: 0 5px #00695c; }
+        
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn small { font-weight: normal; font-size: 0.8rem; margin-top: 5px; }
+
+        /* Phản hồi */
+        #feedback-area {
+            padding: 20px;
+            min-height: 80px;
+            text-align: center;
+        }
+
+        .correct { color: #2e7d32; font-weight: bold; }
+        .wrong { color: #c62828; font-weight: bold; }
+        .explanation { font-size: 0.9rem; color: #546e7a; margin-top: 8px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header">
+        <h1>🛒 Junior Chef Challenge 👨‍🍳</h1>
+        <div class="score-box">Stars: <span id="score">0</span> ⭐</div>
+    </div>
+
+    <div class="display-area">
+        <span id="item-emoji">🍎</span>
+        <span id="item-name">Apple</span>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-countable" onclick="handleChoice('countable')">
+            COUNTABLE
+            <small>(Món đồ đếm được)</small>
+        </button>
+        <button class="btn btn-uncountable" onclick="handleChoice('uncountable')">
+            UNCOUNTABLE
+            <small>(Nguyên liệu không đếm được)</small>
+        </button>
+    </div>
+
+    <div id="feedback-area">
+        <div id="status"></div>
+        <div id="explanation" class="explanation"></div>
+    </div>
+</div>
+
+<script>
+    const foodItems = [
+        { name: "Egg", emoji: "🥚", type: "countable", exp: "You can count: 1 egg, 2 eggs... (Chúng ta có thể đếm từng quả trứng)." },
+        { name: "Flour", emoji: "🥡", type: "uncountable", exp: "Flour is a powder. You can't count grains! (Bột không thể đếm từng hạt li ti)." },
+        { name: "Tomato", emoji: "🍅", type: "countable", exp: "1 tomato, 2 tomatoes. Perfect for counting! (Có thể đếm từng quả cà chua)." },
+        { name: "Milk", emoji: "🥛", type: "uncountable", exp: "Milk is a liquid. We use bottles to measure it. (Sữa là chất lỏng, không thể đếm 1 sữa, 2 sữa)." },
+        { name: "Honey", emoji: "🍯", type: "uncountable", exp: "Honey is sticky and liquid. (Mật ong là chất lỏng đặc, không đếm được)." },
+        { name: "Cookie", emoji: "🍪", type: "countable", exp: "You can count every single cookie in the jar! (Con có thể đếm từng chiếc bánh quy)." },
+        { name: "Salt", emoji: "🧂", type: "uncountable", exp: "Salt grains are too tiny to count. (Hạt muối quá nhỏ để chúng ta ngồi đếm)." },
+        { name: "Burger", emoji: "🍔", type: "countable", exp: "1 burger, 2 burgers. Let's eat! (Bánh burger có thể đếm được dễ dàng)." },
+        { name: "Water", emoji: "💧", type: "uncountable", exp: "Water has no shape, so it's uncountable. (Nước không có hình dạng cố định nên không đếm được)." },
+        { name: "Potato", emoji: "🥔", type: "countable", exp: "Grab 3 potatoes for the fries! (Lấy 3 củ khoai tây nhé, chúng đếm được đấy)." }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let canClick = true;
+
+    function updateDisplay() {
+        const item = foodItems[currentIdx];
+        document.getElementById('item-emoji').innerText = item.emoji;
+        document.getElementById('item-name').innerText = item.name;
+        document.getElementById('status').innerText = "";
+        document.getElementById('explanation').innerText = "";
+        canClick = true;
+    }
+
+    function handleChoice(choice) {
+        if (!canClick) return;
+        canClick = false;
+
+        const item = foodItems[currentIdx];
+        const statusEl = document.getElementById('status');
+        const explainEl = document.getElementById('explanation');
+
+        if (choice === item.type) {
+            score += 10;
+            statusEl.innerHTML = "<span class='correct'>✅ Yummy! Correct!</span>";
+        } else {
+            statusEl.innerHTML = "<span class='wrong'>❌ Oh no! Try again!</span>";
+        }
+
+        document.getElementById('score').innerText = score;
+        explainEl.innerText = item.exp;
+
+        setTimeout(() => {
+            currentIdx++;
+            if (currentIdx < foodItems.length) {
+                updateDisplay();
+            } else {
+                finishGame();
+            }
+        }, 3000);
+    }
+
+    function finishGame() {
+        const container = document.getElementById('game-container');
+        container.innerHTML = `
+            <div class="header"><h1>🎉 Cooking Finished!</h1></div>
+            <div class="display-area">
+                <p style="font-size: 1.5rem">You earned: <strong>${score} Stars</strong></p>
+                <p>You are now a Grammar Master Chef!</p>
+                <button class="btn btn-countable" style="width: 200px; margin: 20px auto;" onclick="location.reload()">Play Again</button>
+            </div>
+        `;
+    }
+
+    updateDisplay();
+</script>
+
+</body>
+</html>

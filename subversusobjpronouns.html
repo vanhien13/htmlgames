@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoo Safari Grammar Game</title>
+    <style>
+        :root {
+            /* Đổi bảng màu sang theme Rừng xanh/Vườn thú */
+            --primary: #2e7d32; /* Xanh lá đậm */
+            --secondary: #5d4037; /* Nâu đất */
+            --accent: #ffeb3b; /* Vàng tươi */
+            --success: #2ecc71;
+            --error: #c62828;
+            --dark: #2c3e50;
+            --bg-color: #e8f5e9; /* Nền xanh nhạt */
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font chữ vui nhộn hơn */
+            background-color: var(--bg-color);
+            /* Thêm họa tiết lá cây mờ làm nền nếu muốn */
+            background-image: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('https://www.transparenttextures.com/patterns/arches.png');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #game-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            border-top: 5px solid var(--primary);
+            border-bottom: 5px solid var(--secondary);
+        }
+
+        h1 { color: var(--secondary); margin-bottom: 0.5rem; font-size: 2rem; }
+        .score-board { font-size: 1.3rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--primary); }
+
+        #question-box {
+            background: #fffde7; /* Nền vàng kem nhẹ */
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            border: 3px dashed var(--primary);
+            position: relative;
+        }
+        
+        /* Thêm icon động vật trang trí */
+        #question-box::after {
+            content: '🐾';
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            font-size: 2rem;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .sentence { font-size: 1.4rem; margin-bottom: 1.5rem; line-height: 1.4; color: var(--dark); }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px #1b5e20;
+        }
+
+        button:hover { background: #388e3c; transform: translateY(-2px); box-shadow: 0 6px #1b5e20; }
+        button:active { transform: translateY(2px); box-shadow: 0 2px #1b5e20; }
+
+        #feedback {
+            margin-top: 1rem;
+            height: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .explanation {
+            background-color: #e0f2f1;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--secondary);
+            margin-top: 15px;
+            font-style: italic;
+            border-left: 4px solid var(--primary);
+        }
+        
+        /* Nút chơi lại */
+        .replay-btn {
+            background: var(--secondary);
+            box-shadow: 0 4px #3e2723;
+        }
+        .replay-btn:hover {
+             background: #5d4037;
+             box-shadow: 0 6px #3e2723;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>🦁 Zoo Safari Grammar</h1>
+    <div class="score-board">Score: <span id="score">0</span> 🌟</div>
+
+    <div id="question-box">
+        <div id="game-content">
+            <p class="sentence" id="sentence-display">Loading...</p>
+            <div class="options" id="options-display"></div>
+        </div>
+    </div>
+
+    <div id="feedback"></div>
+    <div id="explanation-display" class="explanation" style="display: none;"></div>
+</div>
+
+<script>
+    // Dữ liệu câu hỏi theo chủ đề Vườn thú
+    const quizData = [
+        {
+            sentence: "Look at the big lion! _____ is sleeping under a tree.",
+            options: ["He", "Him"],
+            correct: "He",
+            explain: "🦁 'He' là Chủ ngữ (Subject) đứng trước động từ 'is sleeping'."
+        },
+        {
+            sentence: "The monkeys are hungry. The zookeeper gives bananas to ____.",
+            options: ["they", "them"],
+            correct: "them",
+            explain: "🐒 'them' là Tân ngữ (Object) đứng sau giới từ 'to'. (Những chú khỉ)"
+        },
+        {
+            sentence: "I see a tall giraffe. _____ has a very long neck.",
+            options: ["It", "Its"],
+            correct: "It",
+            explain: "🦒 'It' là Chủ ngữ (Subject) thay thế cho một con vật (the giraffe)."
+        },
+        {
+            sentence: "My friends and I are at the zoo. _____ are watching the seals.",
+            options: ["We", "Us"],
+            correct: "We",
+            explain: "👨‍👩‍👧‍👦 'We' là Chủ ngữ (Subject) - bao gồm 'My friends and I' (Chúng tôi)."
+        },
+        {
+            sentence: "Mr. Ba is the zookeeper here. The animals love ____ very much.",
+            options: ["he", "him"],
+            correct: "him",
+            explain: "👨‍🌾 'him' là Tân ngữ (Object) chỉ nam giới, đứng sau động từ 'love'."
+        },
+        {
+            sentence: "That colorful parrot is looking at ____! (pointing to myself)",
+            options: ["I", "me"],
+            correct: "me",
+            explain: "🦜 'me' là Tân ngữ (Object) chỉ bản thân mình, đứng sau giới từ 'at'."
+        },
+        {
+            sentence: "Where is the mother elephant? Oh, there _____ is!",
+            options: ["she", "her"],
+            correct: "she",
+            explain: "🐘 'she' là Chủ ngữ (Subject) dùng cho con vật giống cái."
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let isAnswering = false;
+
+    const sentenceEl = document.getElementById('sentence-display');
+    const optionsEl = document.getElementById('options-display');
+    const feedbackEl = document.getElementById('feedback');
+    const scoreEl = document.getElementById('score');
+    const explainEl = document.getElementById('explanation-display');
+
+    function loadQuestion() {
+        isAnswering = true;
+        const data = quizData[currentQuestion];
+        sentenceEl.innerText = data.sentence;
+        optionsEl.innerHTML = '';
+        feedbackEl.innerText = '';
+        explainEl.style.display = 'none';
+        explainEl.innerText = '';
+
+        data.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(btn, opt);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedBtn, selectedText) {
+        if (!isAnswering) return; // Ngăn chặn click nhiều lần
+        isAnswering = false;
+
+        const data = quizData[currentQuestion];
+        const buttons = optionsEl.querySelectorAll('button');
+        
+        // Vô hiệu hóa các nút sau khi chọn
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedText === data.correct) {
+            score += 10;
+            feedbackEl.innerHTML = "🎉 Correct! Great job! 🎉";
+            feedbackEl.style.color = "var(--success)";
+            selectedBtn.style.background = "var(--success)";
+            selectedBtn.style.boxShadow = "0 4px #1e8e4e";
+        } else {
+            feedbackEl.innerText = "🙉 Oh no! Not quite right.";
+            feedbackEl.style.color = "var(--error)";
+            selectedBtn.style.background = "var(--error)";
+            selectedBtn.style.boxShadow = "0 4px #8e1e1e";
+            // Chỉ ra đáp án đúng
+            buttons.forEach(btn => {
+                if (btn.innerText === data.correct) {
+                     btn.style.background = "var(--success)";
+                     btn.style.opacity = "0.7";
+                }
+            });
+        }
+        
+        scoreEl.innerText = score;
+        explainEl.innerText = data.explain;
+        explainEl.style.display = "block";
+
+        // Thời gian chờ lâu hơn một chút để bé đọc giải thích
+        setTimeout(() => {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }, 3500);
+    }
+
+    function showResult() {
+        const finalScorePercent = Math.round((score / (quizData.length * 10)) * 100);
+        let message = "";
+        if (finalScorePercent === 100) message = "🏆 Amazing! You are the Zoo Grammar King/Queen!";
+        else if (finalScorePercent >= 70) message = "👍 Great job! You know your animals well!";
+        else message = "💪 Good effort! Let's visit the zoo again to practice!";
+
+        document.getElementById('game-content').innerHTML = `
+            <h2 style="color: var(--primary)">Adventure Complete!</h2>
+            <p style="font-size: 1.5rem;">Your Total Score: <strong>${score}</strong> / ${quizData.length * 10}</p>
+            <p style="color: var(--secondary); font-style: italic;">${message}</p>
+            <button class="replay-btn" onclick="location.reload()" style="margin-top: 20px;">🔄 Play Again</button>
+        `;
+        feedbackEl.innerText = "";
+        explainEl.style.display = "none";
+         document.getElementById('question-box').style.border = "none";
+         document.getElementById('question-box').style.background = "transparent";
+    }
+
+    // Bắt đầu game
+    loadQuestion();
+</script>
+
+</body>
+</html>

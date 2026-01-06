@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurassic Park: SVA Challenge</title>
+    <style>
+        :root {
+            --primary-green: #2d5a27;
+            --dino-yellow: #f1c40f;
+            --jungle-brown: #5d4037;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a301a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--white);
+        }
+
+        #quiz-container {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://img.freepik.com/free-vector/prehistoric-forest-landscape-scene_1308-55447.jpg');
+            background-size: cover;
+            width: 90%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 20px;
+            border: 5px solid var(--dino-yellow);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--dino-yellow);
+            text-shadow: 2px 2px 4px #000;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        #question-box {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: var(--dino-yellow);
+            border: none;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            color: var(--jungle-brown);
+        }
+
+        .option-btn:hover {
+            transform: scale(1.05);
+            background-color: #ffeb3b;
+        }
+
+        #feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            display: none;
+        }
+
+        .correct { background-color: #4caf50; color: white; }
+        .wrong { background-color: #f44336; color: white; }
+
+        #next-btn {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            background-color: var(--white);
+            color: var(--primary-green);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            display: none;
+            font-weight: bold;
+        }
+
+        #score-board {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: var(--dino-yellow);
+        }
+
+        .dino-icon { font-size: 3rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="dino-icon">🦖</div>
+    <h1>Dino Quiz!</h1>
+    <div id="score-board">Điểm của em: <span id="score">0</span></div>
+    <hr>
+    <div id="question-box">Đang tải câu hỏi...</div>
+    <div class="options-grid" id="options"></div>
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="nextQuestion()">Tiếp tục thám hiểm ➡️</button>
+</div>
+
+<script>
+    const questions = [
+        { q: "The T-Rex ____ very big and scary.", options: ["is", "are"], correct: 0, why: "🦖 Chỉ có 1 con T-Rex thôi, mình dùng 'is' nhé!" },
+        { q: "Five dinosaurs ____ running!", options: ["is", "are"], correct: 1, why: "🦖 Tận 5 con khủng long lận, dùng 'are' mới đúng!" },
+        { q: "A small Raptor ____ fast.", options: ["run", "runs"], correct: 1, why: "🦖 Một bạn Raptor chạy, mình thêm 's' vào 'runs' nha." },
+        { q: "The eggs ____ in the nest.", options: ["is", "are"], correct: 1, why: "🦖 Nhiều quả trứng (eggs) thì đi với 'are'." },
+        { q: "I ____ a brave explorer.", options: ["am", "is"], correct: 0, why: "🦖 'I' luôn đi cặp với 'am', bạn đồng hành tuyệt vời!" },
+        { q: "Two Jeeps ____ on the road.", options: ["go", "goes"], correct: 0, why: "🦖 Hai chiếc xe là số nhiều, ta giữ nguyên từ 'go'." },
+        { q: "The sun ____ hot today.", options: ["is", "are"], correct: 0, why: "🦖 Một ông mặt trời duy nhất nên dùng 'is'." },
+        { q: "Dinosaurs ____ big teeth.", options: ["has", "have"], correct: 1, why: "🦖 Những con khủng long (số nhiều) dùng 'have' nè." },
+        { q: "The baby dinosaur ____ a leaf.", options: ["eat", "eats"], correct: 1, why: "🦖 Một em bé khủng long ăn, mình chọn 'eats' có đuôi 's' nhé." },
+        { q: "The tall trees ____ green.", options: ["is", "are"], correct: 1, why: "🦖 Nhiều cái cây xanh mướt, ta dùng 'are'." }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+
+    function loadQuestion() {
+        const qData = questions[currentIdx];
+        document.getElementById('question-box').innerText = qData.q;
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = '';
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+
+        qData.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIdx) {
+        const qData = questions[currentIdx];
+        const feedback = document.getElementById('feedback');
+        const buttons = document.querySelectorAll('.option-btn');
+        
+        // Disable buttons
+        buttons.forEach(btn => btn.disabled = true);
+
+        if(selectedIdx === qData.correct) {
+            feedback.innerText = "Gầm rừuuu! Đúng rồi! 🌟 " + qData.why;
+            feedback.className = 'correct';
+            score += 10;
+        } else {
+            feedback.innerText = "Ồ không! Thử lại xem nào. 🦖 " + qData.why;
+            feedback.className = 'wrong';
+        }
+
+        feedback.style.display = 'block';
+        document.getElementById('next-btn').style.display = 'inline-block';
+        document.getElementById('score').innerText = score;
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if(currentIdx < questions.length) {
+            loadQuestion();
+        } else {
+            document.getElementById('quiz-container').innerHTML = `
+                <div class="dino-icon">🏆</div>
+                <h1>Chúc mừng nhà thám hiểm!</h1>
+                <p style="font-size: 1.5rem">Em đã hoàn thành chuyến đi với số điểm: ${score}</p>
+                <button class="option-btn" onclick="location.reload()">Chơi lại từ đầu</button>
+            `;
+        }
+    }
+
+    // Khởi tạo game
+    loadQuestion();
+</script>
+
+</body>
+</html>
