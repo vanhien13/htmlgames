@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khủng Long & Bánh Tròn Chục</title>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FFD700; /* Vàng cho bánh */
+            --secondary-color: #4CAF50; /* Xanh lá */
+            --bg-color: #87CEEB; /* Xanh da trời */
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Patrick Hand', cursive, sans-serif;
+            background-color: var(--bg-color);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='800' y1='0' x2='800' y2='800'%3E%3Cstop offset='0' stop-color='%2387CEEB'/%3E%3Cstop offset='1' stop-color='%234682B4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23a)' width='1600' height='800'/%3E%3Cg fill='%23FFF' fill-opacity='0.4'%3E%3Cpath d='M-168 544.3c32.5 8.3 75.3 37.8 117.3 60.5 42 22.7 84 39 143 34.8 59-4.2 135-29.3 194-37.8 59-8.5 101-1.7 167 23.5 66 25.2 156 68.8 213 80.7 57 11.8 81-8.5 139-32.8 58-24.3 150-52.2 216-56.3 66-4.2 106 17.7 164 47 58 29.3 134 66.3 190 77.3 56 11 92-9.2 158-41.2 66-32 182-76 244-84 62-8 100 14 138 36 38 22 76 44 114 66 38 22 76 44 114 66 38 22 76 44 114 66 38 22 76 44 114 66L3468 1200H-168V544.3z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: cover;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 5px solid var(--secondary-color);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 95%;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #D35400;
+        }
+
+        #stats-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            background-color: #FFF8DC;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #D35400;
+        }
+
+        #dino-stage {
+            height: 180px;
+            position: relative;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .dino {
+            font-size: 7em;
+            transition: all 0.3s ease;
+        }
+
+        .dino.eating { transform: scale(1.1); }
+
+        #question-box {
+            font-size: 3.5em;
+            background-color: #FFFACD; /* Màu kem */
+            color: #D35400;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 4px solid var(--primary-color);
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Mô phỏng thanh chục trong câu hỏi */
+        .ten-block-group {
+            display: flex;
+            margin: 0 10px;
+        }
+        .ten-block {
+            width: 15px;
+            height: 60px;
+            background-color: #FFD700;
+            border: 2px solid #D35400;
+            margin-right: 3px;
+            display: grid;
+            grid-template-rows: repeat(10, 1fr);
+        }
+        .ten-block div { border-bottom: 1px solid #D35400; }
+
+        #answers-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .answer-btn {
+            background-color: var(--primary-color);
+            background-image: radial-gradient(circle at 30% 30%, #FFFACD, #FFD700);
+            border: 3px solid #D35400;
+            border-radius: 50%; /* Hình tròn bánh */
+            color: #D35400;
+            font-size: 2.2em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px #B8860B;
+            transition: transform 0.1s;
+            font-family: 'Patrick Hand', cursive, sans-serif;
+            position: relative;
+        }
+
+        .answer-btn::before {
+            content: '🧁'; /* Icon bánh */
+            position: absolute;
+            top: -20px;
+            font-size: 0.8em;
+        }
+
+        .answer-btn:hover { transform: translateY(-3px); }
+        .answer-btn:active { box-shadow: 0 2px #B8860B; transform: translateY(2px); }
+
+        #message {
+            font-size: 1.5em;
+            height: 1.5em;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .correct-msg { color: var(--secondary-color); }
+        .wrong-msg { color: red; }
+
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            z-index: 10;
+            color: white;
+        }
+
+        #start-btn {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Patrick Hand', cursive, sans-serif;
+            box-shadow: 0 5px #2e7d32;
+        }
+        #start-btn:active { box-shadow: 0 2px #2e7d32; transform: translateY(3px);}
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Khủng Long & Bánh Tròn Chục</h1>
+        
+        <div id="stats-bar">
+            <div>Điểm: <span id="score">0</span></div>
+            <div>Thời gian: <span id="timer">60</span>s</div>
+        </div>
+
+        <div id="dino-stage">
+            <div id="dino-char" class="dino">🦖</div>
+        </div>
+
+        <div id="question-box">
+            </div>
+
+        <div id="answers-container">
+            <button class="answer-btn" onclick="checkAnswer(this)">30</button>
+            <button class="answer-btn" onclick="checkAnswer(this)">50</button>
+            <button class="answer-btn" onclick="checkAnswer(this)">70</button>
+        </div>
+
+        <div id="message"></div>
+
+        <div id="overlay">
+            <h2 id="overlay-title">Sẵn sàng ăn bánh chưa?</h2>
+            <p id="final-score" style="font-size: 1.5em; display:none;">Điểm của bé: 0</p>
+            <button id="start-btn" onclick="startGame()">BẮT ĐẦU!</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let currentAnswer;
+        let isPlaying = false;
+
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const questionEl = document.getElementById('question-box');
+        const messageEl = document.getElementById('message');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const startBtn = document.getElementById('start-btn');
+        const finalScoreEl = document.getElementById('final-score');
+        const dinoChar = document.getElementById('dino-char');
+        const answerBtns = document.getElementsByClassName('answer-btn');
+
+        // Hàm tạo HTML cho các thanh chục
+        function createTenBlocks(numTens) {
+            let html = '<div class="ten-block-group">';
+            for (let i = 0; i < numTens; i++) {
+                html += '<div class="ten-block"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            isPlaying = true;
+            scoreEl.textContent = score;
+            timerEl.textContent = timeLeft;
+            overlay.style.display = 'none';
+            finalScoreEl.style.display = 'none';
+            messageEl.textContent = '';
+            generateQuestion();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            isPlaying = false;
+            overlay.style.display = 'flex';
+            overlayTitle.textContent = "Hết bánh rồi!";
+            finalScoreEl.textContent = "Điểm của bé là: " + score;
+            finalScoreEl.style.display = 'block';
+            startBtn.textContent = "Chơi lại nào!";
+        }
+
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function generateQuestion() {
+            messageEl.textContent = '';
+            dinoChar.textContent = '🦖';
+            dinoChar.classList.remove('eating');
+
+            let num1, num2, operation, symbol;
+            operation = Math.random() < 0.6 ? 'add' : 'subtract'; // Ưu tiên phép cộng hơn chút
+
+            if (operation === 'add') {
+                symbol = '+';
+                num1 = rand(1, 8) * 10;
+                num2 = rand(1, 9 - (num1/10)) * 10;
+                currentAnswer = num1 + num2;
+            } else {
+                symbol = '-';
+                num1 = rand(2, 9) * 10;
+                num2 = rand(1, (num1/10) - 1) * 10;
+                currentAnswer = num1 - num2;
+            }
+
+            // Hiển thị câu hỏi kết hợp số và hình ảnh thanh chục
+            questionEl.innerHTML = `
+                ${createTenBlocks(num1/10)} ${num1} 
+                <span style="margin: 0 15px;">${symbol}</span> 
+                ${createTenBlocks(num2/10)} ${num2} 
+                <span style="margin: 0 15px;">=</span> ?
+            `;
+            
+            generateAnswers(currentAnswer);
+        }
+
+        function generateAnswers(correct) {
+            let answers = [correct];
+            while (answers.length < 3) {
+                // Tạo đáp án sai là số tròn chục
+                let offset = rand(1, 3) * 10 * (Math.random() < 0.5 ? 1 : -1);
+                let wrong = correct + offset;
+                if (wrong > 0 && wrong < 100 && !answers.includes(wrong)) {
+                    answers.push(wrong);
+                }
+            }
+            answers.sort(() => Math.random() - 0.5);
+            for (let i = 0; i < answerBtns.length; i++) {
+                answerBtns[i].textContent = answers[i];
+                answerBtns[i].disabled = false;
+            }
+        }
+
+        function checkAnswer(btn) {
+            if (!isPlaying) return;
+            let selectedAnswer = parseInt(btn.textContent);
+            for (let i = 0; i < answerBtns.length; i++) answerBtns[i].disabled = true;
+
+            if (selectedAnswer === currentAnswer) {
+                score += 10;
+                scoreEl.textContent = score;
+                messageEl.textContent = "Yummy! Đúng rồi!";
+                messageEl.className = "correct-msg";
+                dinoChar.textContent = '🧁🦖';
+                dinoChar.classList.add('eating');
+                setTimeout(generateQuestion, 1000);
+            } else {
+                timeLeft -= 5; if(timeLeft < 0) timeLeft = 0;
+                timerEl.textContent = timeLeft;
+                messageEl.textContent = "Ôi sai rồi, bánh rơi mất!";
+                messageEl.className = "wrong-msg";
+                dinoChar.textContent = '😢🦖';
+                document.getElementById('game-container').classList.add('shake');
+                setTimeout(() => {
+                     document.getElementById('game-container').classList.remove('shake');
+                     generateQuestion();
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>

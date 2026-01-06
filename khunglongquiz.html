@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi Khủng Long Học Toán</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e8f5e9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #game-container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        #dino-display {
+            font-size: 80px;
+            margin-bottom: 20px;
+            height: 120px;
+            transition: transform 0.3s;
+        }
+
+        .question {
+            font-size: 24px;
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            border: 2px solid #a5d6a7;
+            border-radius: 10px;
+            background-color: white;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #c8e6c9;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            height: 24px;
+        }
+
+        .score {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .correct-anim { transform: scale(1.2); }
+        .wrong-anim { transform: translateX(10px); }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>🦖 Toán Khủng Long</h1>
+        <div id="dino-display">🦖</div>
+        <div id="question" class="question">Đang tải...</div>
+        <div id="options" class="options"></div>
+        <div id="message"></div>
+        <div class="score">Điểm: <span id="score-val">0</span>/10</div>
+        <button id="next-btn" style="display:none; margin-top:20px; width:100%; background:#4caf50; color:white;">Câu tiếp theo</button>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "20 + 7 = ?", a: ["27", "207", "72", "17"], correct: 0 },
+            { q: "35 - 5 = ?", a: ["40", "30", "25", "35"], correct: 1 },
+            { q: "Số gồm 4 chục và 2 đơn vị là:", a: ["6", "24", "42", "402"], correct: 2 },
+            { q: "Phép tính nào có kết quả bằng 59?", a: ["50 + 9", "50 + 0", "90 + 5", "5 + 9"], correct: 0 },
+            { q: "48 - 8 = ?", a: ["56", "40", "48", "38"], correct: 1 },
+            { q: "60 + ? = 66", a: ["60", "0", "6", "16"], correct: 2 },
+            { q: "74 - 4 = ?", a: ["70", "78", "4", "80"], correct: 0 },
+            { q: "3 chục + 1 chục = ?", a: ["20", "4", "40", "31"], correct: 2 },
+            { q: "Số 89 gồm mấy chục và mấy đơn vị?", a: ["9 chục, 8 đv", "8 chục, 9 đv", "80 chục, 9 đv", "8 chục, 0 đv"], correct: 1 },
+            { q: "55 - 5 = ?", a: ["50", "60", "5", "45"], correct: 0 }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+
+        const dinoDisplay = document.getElementById('dino-display');
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const messageEl = document.getElementById('message');
+        const scoreEl = document.getElementById('score-val');
+        const nextBtn = document.getElementById('next-btn');
+
+        function loadQuestion() {
+            const data = questions[currentIdx];
+            questionEl.innerText = data.q;
+            optionsEl.innerHTML = '';
+            messageEl.innerText = '';
+            nextBtn.style.display = 'none';
+            dinoDisplay.innerText = "🦖";
+            dinoDisplay.className = "";
+
+            data.a.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index);
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx) {
+            const isCorrect = selectedIdx === questions[currentIdx].correct;
+            const buttons = optionsEl.getElementsByTagName('button');
+            
+            // Khóa tất cả các nút
+            for(let b of buttons) b.disabled = true;
+
+            if (isCorrect) {
+                score++;
+                scoreEl.innerText = score;
+                dinoDisplay.innerText = "🦖😄";
+                dinoDisplay.classList.add('correct-anim');
+                messageEl.innerText = "Chính xác! Bạn giỏi quá!";
+                messageEl.style.color = "green";
+            } else {
+                dinoDisplay.innerText = "🦖😭";
+                dinoDisplay.classList.add('wrong-anim');
+                messageEl.innerText = "Tiếc quá, sai mất rồi!";
+                messageEl.style.color = "red";
+                buttons[selectedIdx].style.backgroundColor = "#ffcdd2";
+            }
+            
+            buttons[questions[currentIdx].correct].style.backgroundColor = "#c8e6c9";
+            nextBtn.style.display = 'block';
+        }
+
+        nextBtn.onclick = () => {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        };
+
+        function showResult() {
+            questionEl.innerText = "Trò chơi kết thúc!";
+            optionsEl.innerHTML = `<h3>Tổng điểm của bạn: ${score}/10</h3>`;
+            nextBtn.innerText = "Chơi lại";
+            nextBtn.onclick = () => location.reload();
+            if(score >= 8) dinoDisplay.innerText = "🦖🏆";
+            else dinoDisplay.innerText = "🦖💪";
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>

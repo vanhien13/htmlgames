@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khủng Long Phân Loại: Chục và Đơn Vị</title>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tens-color: #FF9800; /* Màu cam cho hàng chục */
+            --ones-color: #2196F3; /* Màu xanh dương cho hàng đơn vị */
+            --bg-color: #8B4513;
+            --text-color: #fff;
+            --panel-bg: rgba(255, 248, 220, 0.95); /* Màu kem sáng */
+        }
+
+        body {
+            font-family: 'Patrick Hand', cursive, sans-serif;
+            background-color: var(--bg-color);
+            /* Sử dụng lại nền rừng tiền sử */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='800' y1='0' x2='800' y2='800'%3E%3Cstop offset='0' stop-color='%238B4513'/%3E%3Cstop offset='1' stop-color='%235E2C0B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23a)' width='1600' height='800'/%3E%3Cg fill-opacity='0.4'%3E%3Cpath fill='%233E1F07' d='M-168 544.3c32.5 8.3 75.3 37.8 117.3 60.5 42 22.7 84 39 143 34.8 59-4.2 135-29.3 194-37.8 59-8.5 101-1.7 167 23.5 66 25.2 156 68.8 213 80.7 57 11.8 81-8.5 139-32.8 58-24.3 150-52.2 216-56.3 66-4.2 106 17.7 164 47 58 29.3 134 66.3 190 77.3 56 11 92-9.2 158-41.2 66-32 182-76 244-84 62-8 100 14 138 36 38 22 76 44 114 66 38 22 76 44 114 66 38 22 76 44 114 66 38 22 76 44 114 66L3468 1200H-168V544.3z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: cover;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #game-container {
+            background-color: var(--panel-bg);
+            border-radius: 25px;
+            padding: 25px;
+            text-align: center;
+            border: 6px solid #5D4037;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            max-width: 700px;
+            width: 90%;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin: 0 0 15px 0;
+            color: #D84315;
+        }
+
+        #score-bar {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #5D4037;
+            font-weight: bold;
+        }
+
+        /* Khu vực hiển thị số và khối hình */
+        #display-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #FFF8E1;
+            border-radius: 15px;
+            border: 3px dashed #8D6E63;
+        }
+
+        #big-number {
+            font-size: 6em;
+            font-weight: bold;
+            letter-spacing: 5px;
+        }
+        
+        /* Tô màu riêng cho số chục và đơn vị để dễ nhìn */
+        .tens-digit-txt { color: var(--tens-color); }
+        .ones-digit-txt { color: var(--ones-color); }
+
+        #visual-blocks {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .tens-group { display: flex; gap: 5px; }
+        .ten-bar {
+            width: 12px; height: 80px;
+            background-color: var(--tens-color);
+            border: 2px solid #E65100;
+            display: grid; grid-template-rows: repeat(10, 1fr);
+        }
+        .ten-bar div { border-bottom: 1px solid #E65100; }
+
+        .ones-group { display: flex; flex-wrap: wrap; gap: 5px; width: 40px; justify-content: flex-start;}
+        .one-cube {
+            width: 15px; height: 15px;
+            background-color: var(--ones-color);
+            border: 2px solid #1565C0;
+        }
+
+        /* Khu vực câu hỏi và Khủng long */
+        #question-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        #dino-avatar { font-size: 5em; margin-right: 15px; }
+        #question-text {
+            font-size: 2em;
+            background-color: #fff;
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 3px solid #8D6E63;
+            position: relative;
+        }
+        /* Tạo mũi tên cho bong bóng hội thoại */
+        #question-text::after {
+            content: ''; position: absolute; left: -15px; top: 50%;
+            border-top: 10px solid transparent; border-bottom: 10px solid transparent; 
+            border-right: 15px solid #8D6E63; transform: translateY(-50%);
+        }
+        .highlight-tens { color: var(--tens-color); font-weight: bold; font-size: 1.2em; }
+        .highlight-ones { color: var(--ones-color); font-weight: bold; font-size: 1.2em; }
+
+        /* Khu vực đáp án */
+        #answers-container {
+            display: flex; justify-content: center; gap: 25px;
+        }
+
+        .egg-btn {
+            width: 90px; height: 110px;
+            background-color: #FFECB3;
+            background-image: radial-gradient(circle at 40% 40%, #fff, #FFECB3 60%, #FFC107 90%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Hình quả trứng */
+            border: 4px solid #FFA000;
+            font-size: 3em; color: #5D4037; font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Patrick Hand', cursive, sans-serif;
+            box-shadow: 0 6px #B38F00;
+        }
+        .egg-btn:hover { transform: translateY(-5px) scale(1.05); background-color: #FFF9C4;}
+        .egg-btn:active { transform: translateY(2px); box-shadow: 0 2px #B38F00;}
+        .egg-btn.disabled { opacity: 0.7; cursor: not-allowed; pointer-events: none;}
+
+        #message { min-height: 1.5em; font-size: 1.8em; margin-top: 15px; font-weight: bold; }
+        .correct { color: #2E7D32; } .wrong { color: #C62828; }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Khủng Long Phân Loại: Chục & Đơn Vị</h1>
+        <div id="score-bar">⭐ Điểm: <span id="score">0</span></div>
+
+        <div id="display-area">
+            <div id="big-number">
+                <span class="tens-digit-txt">3</span><span class="ones-digit-txt">5</span>
+            </div>
+            <div id="visual-blocks">
+                </div>
+        </div>
+
+        <div id="question-section">
+            <div id="dino-avatar">🦖</div>
+            <div id="question-text">
+                Số này có mấy <span>CHỤC</span>?
+            </div>
+        </div>
+
+        <div id="answers-container">
+            <button class="egg-btn">3</button>
+            <button class="egg-btn">5</button>
+            <button class="egg-btn">8</button>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Các biến toàn cục
+        let currentNumber;
+        let tensDigit, onesDigit;
+        let questionType; // 'tens' hoặc 'ones'
+        let score = 0;
+        let isAnswering = false;
+
+        // Lấy các phần tử DOM
+        const bigNumberTensEl = document.querySelector('.tens-digit-txt');
+        const bigNumberOnesEl = document.querySelector('.ones-digit-txt');
+        const visualBlocksEl = document.getElementById('visual-blocks');
+        const questionTextEl = document.getElementById('question-text');
+        const dinoAvatarEl = document.getElementById('dino-avatar');
+        const answerBtns = document.querySelectorAll('.egg-btn');
+        const messageEl = document.getElementById('message');
+        const scoreEl = document.getElementById('score');
+
+        // Hàm khởi tạo game
+        function initGame() {
+            score = 0;
+            scoreEl.textContent = score;
+            nextQuestion();
+            setupEventListeners();
+        }
+
+        // Hàm tạo câu hỏi tiếp theo
+        function nextQuestion() {
+            isAnswering = true;
+            messageEl.textContent = '';
+            messageEl.className = '';
+            dinoAvatarEl.textContent = '🦖';
+            answerBtns.forEach(btn => btn.classList.remove('disabled'));
+
+            // 1. Tạo số ngẫu nhiên từ 10 đến 99
+            currentNumber = Math.floor(Math.random() * 90) + 10;
+            tensDigit = Math.floor(currentNumber / 10);
+            onesDigit = currentNumber % 10;
+
+            // 2. Hiển thị số lớn (có tô màu)
+            bigNumberTensEl.textContent = tensDigit;
+            bigNumberOnesEl.textContent = onesDigit;
+
+            // 3. Vẽ các khối hình trực quan
+            drawBlocks(tensDigit, onesDigit);
+
+            // 4. Chọn loại câu hỏi (hỏi Chục hay hỏi Đơn vị)
+            questionType = Math.random() < 0.5 ? 'tens' : 'ones';
+
+            if (questionType === 'tens') {
+                questionTextEl.innerHTML = 'Số này có mấy <span class="highlight-tens">CHỤC</span>?';
+            } else {
+                questionTextEl.innerHTML = 'Số này có mấy <span class="highlight-ones">ĐƠN VỊ</span>?';
+            }
+
+            // 5. Tạo đáp án
+            generateAnswers();
+        }
+
+        // Hàm vẽ các khối hình (thanh chục và khối đơn vị)
+        function drawBlocks(t, o) {
+            visualBlocksEl.innerHTML = '';
+            
+            // Vẽ thanh chục
+            const tensGroup = document.createElement('div');
+            tensGroup.className = 'tens-group';
+            for(let i=0; i<t; i++) {
+                tensGroup.innerHTML += '<div class="ten-bar"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+            }
+            visualBlocksEl.appendChild(tensGroup);
+
+            // Vẽ khối đơn vị
+            const onesGroup = document.createElement('div');
+            onesGroup.className = 'ones-group';
+            for(let i=0; i<o; i++) {
+                onesGroup.innerHTML += '<div class="one-cube"></div>';
+            }
+            visualBlocksEl.appendChild(onesGroup);
+        }
+
+        // Hàm tạo các lựa chọn đáp án trên quả trứng
+        function generateAnswers() {
+            let correctAnswer = (questionType === 'tens') ? tensDigit : onesDigit;
+            let answers = [correctAnswer];
+
+            // Tạo 2 đáp án sai ngẫu nhiên (là số có 1 chữ số từ 0-9)
+            while (answers.length < 3) {
+                let wrong = Math.floor(Math.random() * 10);
+                // Đáp án sai không được trùng với đáp án đúng và không trùng nhau
+                if (!answers.includes(wrong)) {
+                    answers.push(wrong);
+                }
+            }
+
+            // Xáo trộn thứ tự đáp án
+            answers.sort(() => Math.random() - 0.5);
+
+            // Gán vào các nút
+            answerBtns.forEach((btn, index) => {
+                btn.textContent = answers[index];
+            });
+        }
+
+        // Thiết lập sự kiện click cho các nút
+        function setupEventListeners() {
+            answerBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!isAnswering) return;
+                    checkAnswer(parseInt(this.textContent));
+                });
+            });
+        }
+
+        // Hàm kiểm tra đáp án
+        function checkAnswer(selectedVal) {
+            isAnswering = false;
+            answerBtns.forEach(btn => btn.classList.add('disabled')); // Khóa nút
+
+            let correctAnswer = (questionType === 'tens') ? tensDigit : onesDigit;
+
+            if (selectedVal === correctAnswer) {
+                // Đúng
+                score += 1;
+                scoreEl.textContent = score;
+                messageEl.textContent = "Chính xác! Bé giỏi quá!";
+                messageEl.className = "correct";
+                dinoAvatarEl.textContent = '🦕'; // Khủng long vui
+                // Tự động chuyển câu sau 1.5s
+                setTimeout(nextQuestion, 1500);
+            } else {
+                // Sai
+                messageEl.textContent = `Ôi sai rồi! Đáp án đúng là ${correctAnswer} nhé.`;
+                messageEl.className = "wrong";
+                dinoAvatarEl.textContent = '🥲'; // Khủng long buồn
+                // Tự động chuyển câu sau 2s để bé kịp đọc đáp án đúng
+                setTimeout(nextQuestion, 2000);
+            }
+        }
+
+        // Bắt đầu game khi tải trang
+        initGame();
+
+    </script>
+</body>
+</html>
