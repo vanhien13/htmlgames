@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Paw Patrol – Học 5W1H</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(#b3e5fc, #e1f5fe);
+      text-align: center;
+      padding: 20px;
+    }
+    h1 { color: #01579b; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    .question {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .options button {
+      display: block;
+      width: 90%;
+      margin: 10px auto;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: #ffca28;
+    }
+    .options button:hover {
+      background: #ffc107;
+    }
+    .result {
+      font-size: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .character {
+      font-size: 60px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐾 Paw Patrol – Học Who / Where / When / Why / Which / How</h1>
+
+  <div class="card">
+    <div class="character">🐶</div>
+    <div class="question" id="question"></div>
+    <button onclick="showExplanation()" style="font-size:18px;padding:10px 16px;border-radius:12px;border:none;background:#1976d2;color:white;cursor:pointer;">🇻🇳 Giải thích tiếng Việt</button>
+    <div class="options" id="options"></div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function showExplanation() {
+      const exp = explanations[index];
+      document.getElementById('result').innerText = exp;
+    }
+
+    const explanations = [
+      "WHO dùng để hỏi về NGƯỜI. Ví dụ: Who is your teacher?",
+      "WHERE dùng để hỏi về NƠI CHỐN. Ví dụ: Where do you live?",
+      "WHEN dùng để hỏi về THỜI GIAN. Ví dụ: When do you go to school?",
+      "WHY dùng để hỏi về LÝ DO. Ví dụ: Why are you happy?",
+      "WHICH dùng để lựa chọn giữa 2 hay nhiều thứ. Ví dụ: Which color do you like?",
+      "HOW dùng để hỏi CÁCH THỨC hoặc TÌNH TRẠNG. Ví dụ: How are you?"
+    ];
+
+    const questions = [
+      {
+        q: "___ is the leader of Paw Patrol?",
+        correct: "Who",
+        options: ["Who", "Where", "When"]
+      },
+      {
+        q: "___ does Chase work? (At the police station)",
+        correct: "Where",
+        options: ["Who", "Where", "Why"]
+      },
+      {
+        q: "___ do the pups help people? (In the morning)",
+        correct: "When",
+        options: ["When", "Which", "How"]
+      },
+      {
+        q: "___ does Marshall help people? (Because he is a firefighter)",
+        correct: "Why",
+        options: ["Why", "Who", "Where"]
+      },
+      {
+        q: "___ pup do you like? (Chase or Marshall)",
+        correct: "Which",
+        options: ["Which", "When", "Why"]
+      },
+      {
+        q: "___ do the pups save the day? (By working together)",
+        correct: "How",
+        options: ["How", "Where", "Who"]
+      }
+    ];
+
+    let index = 0;
+
+    function loadQuestion() {
+      document.getElementById('result').innerText = "";
+      const q = questions[index];
+      document.getElementById('question').innerText = q.q;
+      // sound removed('___', q.correct));
+      const optionsDiv = document.getElementById('options');
+      optionsDiv.innerHTML = "";
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(answer) {
+      const result = document.getElementById('result');
+      if (answer === questions[index].correct) {
+        result.innerText = "✅ Đúng rồi! Good job!";
+        index = (index + 1) % questions.length;
+        setTimeout(loadQuestion, 1000);
+      } else {
+        result.innerText = "❌ Chưa đúng, thử lại nhé!";
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
+
