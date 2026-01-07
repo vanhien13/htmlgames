@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cảnh Sát Trưởng Labrador: Truy Tìm Tang Vật</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background: #1a2a6c; color: #333; padding: 20px; }
+        #game-box { background: white; max-width: 500px; margin: auto; padding: 30px; border: 8px solid #ffd700; border-radius: 25px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .badge { font-size: 50px; margin-bottom: 10px; }
+        .scene { font-size: 70px; background: #f8f9fa; margin: 20px 0; padding: 30px; border-radius: 15px; border: 2px dashed #ccc; height: 100px; display: flex; align-items: center; justify-content: center; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        button { padding: 15px; font-size: 18px; cursor: pointer; border: 2px solid #003366; border-radius: 10px; background: white; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #eef2f3; transform: translateY(-2px); }
+        .correct { background: #27ae60 !important; color: white; border-color: #27ae60; }
+        .wrong { background: #c0392b !important; color: white; border-color: #c0392b; }
+        #explanation { margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 5px solid #ffa000; display: none; text-align: left; border-radius: 5px; }
+        .progress { font-size: 14px; color: #666; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="game-box">
+    <div class="badge">🕵️‍♂️🐕🚔</div>
+    <h2 style="color:#003366; margin:0;">SHERIFF LABRADOR</h2>
+    <div class="progress">Nhiệm vụ: <span id="current-task">1</span>/10</div>
+    <p style="font-weight:bold;">Điểm công lý: <span id="score" style="color:#d32f2f;">0</span></p>
+    
+    <div class="scene" id="scene">📦🍎</div>
+    <div id="question" style="font-size: 18px; margin-bottom:20px; min-height: 50px;"></div>
+    
+    <div class="btn-grid" id="options"></div>
+
+    <div id="explanation">
+        <strong style="color:#e67e22;">💡 Hồ sơ vụ án:</strong><br>
+        <span id="exp-text"></span>
+    </div>
+</div>
+
+<script>
+    const data = [
+        { s: "🚓🏠", q: "The police car is ___ the house.", a: "in front of", e: "<b>In front of</b>: Phía trước. Xe cảnh sát đang đậu ngay trước cửa nhà.", o: ["behind", "in front of", "under", "on"] },
+        { s: "🏢🏃‍♂️", q: "The thief is ___ the building.", a: "inside", e: "<b>Inside</b>: Bên trong. Tên trộm đang lẩn trốn trong tòa nhà.", o: ["on", "inside", "above", "between"] },
+        { s: "🐕🌳", q: "The Sheriff is standing ___ the tree.", a: "under", e: "<b>Under</b>: Phía dưới. Cảnh sát trưởng đang đứng dưới bóng cây.", o: ["under", "on", "above", "at"] },
+        { s: "🏢🐕🏢", q: "The Sheriff is ___ the two banks.", a: "between", e: "<b>Between</b>: Ở giữa (2 vật). Cảnh sát đang đứng giữa 2 ngân hàng.", o: ["among", "between", "in", "on"] },
+        { s: "🚔🛣️", q: "The siren is ___ the car.", a: "on", e: "<b>On</b>: Trên bề mặt. Đèn còi nằm ngay trên nóc xe.", o: ["in", "at", "on", "under"] },
+        { s: "☁️<br>🚁", q: "The helicopter is ___ the clouds.", a: "below", e: "<b>Below</b>: Thấp hơn. Trực thăng bay phía dưới đám mây.", o: ["on", "in", "below", "between"] },
+        { s: "🐕‍🦺👥", q: "The Sheriff is ___ the crowd.", a: "among", e: "<b>Among</b>: Giữa một đám đông (nhiều người).", o: ["between", "among", "under", "at"] },
+        { s: "🏠🚩", q: "The flag is ___ the station.", a: "above", e: "<b>Above</b>: Phía trên (cao hơn và không chạm).", o: ["on", "under", "above", "in"] },
+        { s: "🐕🧱", q: "The dog is hiding ___ the wall.", a: "behind", e: "<b>Behind</b>: Phía sau. Cảnh sát đang nấp sau bức tường.", o: ["in front of", "behind", "on", "at"] },
+        { s: "📍🏢", q: "Meet me ___ the main entrance.", a: "at", e: "<b>At</b>: Tại một điểm cụ thể (cổng chính).", o: ["in", "on", "at", "above"] }
+    ];
+
+    let current = 0;
+    let score = 0;
+
+    function start() {
+        if (current >= data.length) {
+            let rank = score >= 80 ? "Đại Tá Xuất Sắc" : "Cảnh Sát Tập Sự";
+            document.getElementById('game-box').innerHTML = `
+                <div class="badge">🎖️</div>
+                <h2>HOÀN THÀNH NHIỆM VỤ!</h2>
+                <p>Tổng điểm công lý: <strong>${score}</strong></p>
+                <p>Cấp bậc: <strong>${rank}</strong></p>
+                <button onclick='location.reload()' style="width:100%; background:#003366; color:white;">TUẦN TRA LẠI</button>
+            `;
+            return;
+        }
+
+        const item = data[current];
+        document.getElementById('current-task').innerText = current + 1;
+        document.getElementById('scene').innerHTML = item.s;
+        document.getElementById('question').innerHTML = `<i>Sheriff Labrador says:</i><br><b>"${item.q}"</b>`;
+        document.getElementById('explanation').style.display = 'none';
+        
+        const container = document.getElementById('options');
+        container.innerHTML = '';
+        
+        item.o.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.onclick = function() { check(opt, btn); };
+            container.appendChild(btn);
+        });
+    }
+
+    function check(choice, btn) {
+        const item = data[current];
+        const allBtns = document.querySelectorAll('button');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (choice === item.a) {
+            btn.classList.add('correct');
+            score += 10;
+            document.getElementById('score').innerText = score;
+        } else {
+            btn.classList.add('wrong');
+        }
+
+        document.getElementById('exp-text').innerHTML = item.e;
+        document.getElementById('explanation').style.display = 'block';
+
+        setTimeout(function() {
+            current++;
+            start();
+        }, 3500);
+    }
+
+    start();
+</script>
+
+</body>
+</html>
