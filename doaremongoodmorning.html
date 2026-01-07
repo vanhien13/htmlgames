@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Doraemon Học Chào Hỏi - Bản Ổn Định</title>
+    <style>
+        body { font-family: sans-serif; background: #87CEEB; display: flex; justify-content: center; padding: 20px; }
+        #game-box { background: white; max-width: 450px; width: 100%; border: 6px solid #00A0E9; border-radius: 20px; padding: 20px; text-align: center; }
+        .clock-ui { font-size: 50px; background: #eee; padding: 10px; border-radius: 15px; margin-bottom: 10px; }
+        .time-tag { color: red; font-weight: bold; font-size: 24px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        button { padding: 15px; font-weight: bold; cursor: pointer; border: 2px solid #00A0E9; border-radius: 10px; background: white; }
+        .correct { background: #4CAF50 !important; color: white; }
+        .wrong { background: #F44336 !important; color: white; }
+        #next-btn { background: #ffd700; width: 100%; margin-top: 15px; display: none; padding: 20px; font-size: 18px; border: none; }
+        #info { background: #fff9c4; padding: 15px; border-radius: 10px; margin-top: 15px; display: none; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div id="game-box">
+    <h2 style="color:#00A0E9">🔔 DORAEMON QUIZ</h2>
+    <p>Điểm: <span id="score">0</span></p>
+    
+    <div class="clock-ui" id="icon">🌅</div>
+    <div class="time-tag" id="time">07:00 AM</div>
+    <p id="scenario" style="height:40px; font-weight:bold;"></p>
+
+    <div class="btn-grid" id="options"></div>
+
+    <div id="info">
+        <strong style="color:orange">🐱 Doraemon giải thích:</strong><br>
+        <span id="exp"></span>
+    </div>
+
+    <button id="next-btn" onclick="nextQuestion()">TIẾP THEO ➡️</button>
+</div>
+
+<script>
+    const data = [
+        { t: "07:30 AM", i: "🌅", s: "Chào thầy giáo lúc vừa đến trường", a: "Good morning", e: "<b>Good morning</b>: Chào buổi sáng (từ lúc thức dậy đến 12h trưa)." },
+        { t: "02:00 PM", i: "☀️", s: "Chào Shizuka ở sân chơi vào buổi chiều", a: "Good afternoon", e: "<b>Good afternoon</b>: Chào buổi chiều (từ 12h trưa đến 6h tối)." },
+        { t: "07:00 PM", i: "🌆", s: "Gặp mặt Chaien để đi ăn tối", a: "Good evening", e: "<b>Good evening</b>: Chào buổi tối khi <b>gặp mặt</b> nhau." },
+        { t: "10:30 PM", i: "🌙", s: "Chúc mẹ trước khi đi ngủ", a: "Good night", e: "<b>Good night</b>: Dùng để <b>chúc ngủ ngon</b>, không dùng để chào khi mới gặp." }
+    ];
+
+    let index = 0;
+    let score = 0;
+
+    function load() {
+        if (index >= data.length) {
+            document.getElementById('game-box').innerHTML = "<h2>Hoàn thành!</h2><p>Điểm: "+score+"</p><button onclick='location.reload()' style='width:100%'>Chơi lại</button>";
+            return;
+        }
+        const item = data[index];
+        document.getElementById('icon').innerText = item.i;
+        document.getElementById('time').innerText = item.t;
+        document.getElementById('scenario').innerText = item.s;
+        document.getElementById('info').style.display = "none";
+        document.getElementById('next-btn').style.display = "none";
+        
+        const opts = ["Good morning", "Good afternoon", "Good evening", "Good night"];
+        const container = document.getElementById('options');
+        container.innerHTML = "";
+        opts.forEach(o => {
+            const btn = document.createElement('button');
+            btn.innerText = o;
+            btn.onclick = () => check(o, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function check(choice, btn) {
+        const item = data[index];
+        const allBtns = document.querySelectorAll('#options button');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (choice === item.a) {
+            btn.classList.add('correct');
+            score += 25;
+            document.getElementById('score').innerText = score;
+        } else {
+            btn.classList.add('wrong');
+        }
+
+        document.getElementById('exp').innerHTML = item.e;
+        document.getElementById('info').style.display = "block";
+        document.getElementById('next-btn').style.display = "block";
+    }
+
+    function nextQuestion() {
+        index++;
+        load();
+    }
+
+    load();
+</script>
+</body>
+</html>
