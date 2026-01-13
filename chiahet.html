@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Game Pizza Chia Hết</title>
+<style>
+body{
+    font-family: Arial;
+    background:#ff9966;
+    text-align:center;
+}
+.box{
+    background:white;
+    width:400px;
+    margin:auto;
+    padding:20px;
+    border-radius:15px;
+    position:relative;
+}
+.pizza{font-size:26px;margin:2px;}
+.person{margin:6px 0;}
+button{
+    padding:10px 20px;
+    font-size:18px;
+    border-radius:12px;
+    border:none;
+    margin:5px;
+    cursor:pointer;
+}
+.yes{background:#2ecc71;color:white;}
+.no{background:#e74c3c;color:white;}
+.star{
+    position:absolute;
+    color:gold;
+    font-size:24px;
+    animation:shoot 1.5s linear forwards;
+}
+@keyframes shoot{
+    0%{top:100%;opacity:1;}
+    100%{top:-20px;opacity:0;}
+}
+</style>
+</head>
+<body>
+
+<h1>🍕 GAME CHIA HẾT PIZZA 🍕</h1>
+<h3>Điểm: <span id="score">0</span> | ⏱ <span id="time">10</span>s</h3>
+
+<div class="box" id="box">
+
+<h2 id="number"></h2>
+
+Chia cho:
+<select id="divisor" onchange="newGame()">
+<option>2</option>
+<option>3</option>
+<option>5</option>
+<option>10</option>
+</select>
+
+<div id="visual"></div>
+
+<p>👉 Có chia đều pizza không?</p>
+
+<button class="yes" onclick="check('có')">CÓ</button>
+<button class="no" onclick="check('không')">KHÔNG</button>
+
+<h3 id="result"></h3>
+<h4 id="explain"></h4>
+<h4 id="divide"></h4>
+<h4 id="remain"></h4>
+
+</div>
+
+<br>
+<button onclick="newGame()">Câu mới</button>
+
+<script>
+let n,d,score=0,time=10,timer;
+
+function newGame(){
+    clearInterval(timer);
+    time=10;
+    document.getElementById("time").innerText=time;
+
+    d=parseInt(document.getElementById("divisor").value);
+    let makeDiv=Math.random()<0.5;
+
+    if(makeDiv){
+        let k=Math.floor(Math.random()*5)+1;
+        n=k*d;
+        if(n>20) n=d;
+    }else{
+        do{
+            n=Math.floor(Math.random()*20)+1;
+        }while(n%d==0);
+    }
+
+    document.getElementById("number").innerText=
+        n+" 🍕 pizza chia cho "+d+" 👦 người";
+
+    document.getElementById("result").innerText="";
+    document.getElementById("explain").innerText="";
+    document.getElementById("divide").innerText="";
+    document.getElementById("remain").innerText="";
+
+    draw();
+    startTimer();
+}
+
+function startTimer(){
+    timer=setInterval(()=>{
+        time--;
+        document.getElementById("time").innerText=time;
+        if(time==0){
+            clearInterval(timer);
+            check("hết giờ");
+        }
+    },1000);
+}
+
+function draw(){
+    let v=document.getElementById("visual");
+    v.innerHTML="";
+    let count=0;
+    let person=document.createElement("div");
+
+    for(let i=1;i<=n;i++){
+        let p=document.createElement("span");
+        p.className="pizza";
+        p.innerText="🍕";
+        person.appendChild(p);
+        count++;
+
+        if(count==d){
+            v.appendChild(person);
+            person=document.createElement("div");
+            count=0;
+        }
+    }
+    if(count!=0) v.appendChild(person);
+}
+
+function shootStar(){
+    let box=document.getElementById("box");
+    for(let i=0;i<10;i++){
+        let s=document.createElement("div");
+        s.className="star";
+        s.innerText="⭐";
+        s.style.left=Math.random()*320+"px";
+        box.appendChild(s);
+        setTimeout(()=>s.remove(),1500);
+    }
+}
+
+function check(user){
+    clearInterval(timer);
+    let correct=(n%d==0)?"có":"không";
+
+    let rule="";
+    if(d==2){
+        let last=n%10;
+        rule="Chữ số tận cùng là "+last+", "+(last%2==0?"là số chẵn":"là số lẻ")+".";
+    }
+    if(d==3){
+        let sum=0,t=n;
+        while(t>0){sum+=t%10;t=Math.floor(t/10);}
+        rule="Tổng các chữ số là "+sum+", "+(sum%3==0?"chia hết":"không chia hết")+" cho 3.";
+    }
+    if(d==5){
+        let last=n%10;
+        rule="Chữ số tận cùng là "+last+", "+(last==0||last==5?"nên chia hết":"nên không chia hết")+" cho 5.";
+    }
+    if(d==10){
+        let last=n%10;
+        rule="Chữ số tận cùng là "+last+", "+(last==0?"nên chia hết":"nên không chia hết")+" cho 10.";
+    }
+
+    let q=Math.floor(n/d);
+    let r=n%d;
+
+    document.getElementById("divide").innerText=
+        n+" : "+d+" = "+q+" dư "+r;
+
+    let remain="";
+    for(let i=0;i<r;i++) remain+="🍕";
+    document.getElementById("remain").innerText=
+        r==0?"Không dư pizza.":"Pizza dư: "+remain;
+
+    if(user==correct){
+        score++;
+        document.getElementById("score").innerText=score;
+        document.getElementById("result").innerText="🎉 Chính xác!";
+        shootStar();
+    }else{
+        document.getElementById("result").innerText="❌ Chưa đúng!";
+    }
+
+    document.getElementById("explain").innerText=
+        n+(correct=="có"?" chia hết cho ":" không chia hết cho ")+d+". "+rule;
+}
+
+newGame();
+</script>
+
+</body>
+</html>
+
